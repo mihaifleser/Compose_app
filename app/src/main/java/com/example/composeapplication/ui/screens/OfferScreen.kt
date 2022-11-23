@@ -8,11 +8,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,16 +30,17 @@ import com.example.composeapplication.model.OfferItemViewModel
 fun OffersList(viewModels: List<OfferItemViewModel>) {
     val openDialog = remember { mutableStateOf(false) }
     val selectedViewModel = remember { mutableStateOf(OfferItemViewModel()) }
-    Column {
-        TopBar()
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.space_padding)),
-            modifier = Modifier.padding(dimensionResource(id = R.dimen.space_padding))
-        ) {
-            viewModels.map { item { OfferListItem(viewModel = it, openDialog, selectedViewModel) } }
-        }
-    }
-    ItemAlertDialog(openDialog, selectedViewModel)
+    val displayMenu = remember { mutableStateOf(false) }
+    Scaffold(topBar = { TopBar(displayMenu) },
+        content = {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.space_padding)),
+                modifier = Modifier.padding(dimensionResource(id = R.dimen.space_padding))
+            ) {
+                viewModels.map { item { OfferListItem(viewModel = it, openDialog, selectedViewModel) } }
+            }
+            ItemAlertDialog(openDialog, selectedViewModel)
+        })
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -80,7 +78,7 @@ fun OfferListItem(viewModel: OfferItemViewModel, openDialog: MutableState<Boolea
 }
 
 @Composable
-fun TopBar() {
+fun TopBar(displayMenu: MutableState<Boolean>) {
     TopAppBar(
         elevation = 4.dp,
         title = {
@@ -95,10 +93,24 @@ fun TopBar() {
             Button(onClick = {/* Do Something*/ }, colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primaryVariant)) {
                 Text(text = stringResource(id = R.string.sign_out).uppercase())
             }
-            IconButton(onClick = {/* Do Something*/ }) {
-                Icon(Icons.Filled.Menu, null)
+            IconButton(onClick = { displayMenu.value = true }) {
+                Icon(Icons.Filled.MoreVert, null)
             }
+            OffersListDropdown(displayMenu = displayMenu)
+
         })
+}
+
+@Composable
+fun OffersListDropdown(displayMenu: MutableState<Boolean>) {
+    DropdownMenu(expanded = displayMenu.value, onDismissRequest = { displayMenu.value = false }) {
+        DropdownMenuItem(onClick = { displayMenu.value = false }) {
+            Text(text = stringResource(id = R.string.reset_list))
+        }
+        DropdownMenuItem(onClick = { displayMenu.value = false }) {
+            Text(text = stringResource(id = R.string.clear_favourites))
+        }
+    }
 }
 
 @Composable

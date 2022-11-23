@@ -10,6 +10,8 @@
     <string name="offers_list">Offers List</string>
     <string name="add_offer">Add Offer</string>
     <string name="remove_offer">Remove Offer</string>
+    <string name="reset_list">Reset List</string>
+    <string name="clear_favourites">Clean Favourites</string>
 
     <string name="username_empty">Username cannot be empty</string>
     <string name="username_short">Username is too short</string>
