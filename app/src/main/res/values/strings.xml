@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Compose Application</string>
+
+    <string name="username">Username:</string>
+    <string name="enter_username">Enter Username</string>
+    <string name="password">Password:</string>
+    <string name="enter_password">Enter Password:</string>
+    <string name="sign_in">Sign in</string>
+    <string name="sign_out">Sign out</string>
+    <string name="offers_list">Offers List</string>
+    <string name="add_offer">Add Offer</string>
+    <string name="remove_offer">Remove Offer</string>
+
+    <string name="username_empty">Username cannot be empty</string>
+    <string name="username_short">Username is too short</string>
+    <string name="password_empty">Password cannot be empty</string>
+    <string name="password_short">Password is too short</string>
+    <string name="login_failed">Login Failed. Username or Password are incorrect</string>
+    <string name="login_success">Login Successful</string>
+    <string name="empty" />
+
+</resources>
