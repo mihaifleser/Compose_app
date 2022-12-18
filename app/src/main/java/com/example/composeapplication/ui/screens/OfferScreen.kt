@@ -9,7 +9,11 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,23 +27,35 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.composeapplication.R
-import com.example.composeapplication.model.DefaultOffer
 import com.example.composeapplication.model.OfferItemViewModel
+import com.example.composeapplication.ui.ViewModel.OffersViewModel
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun OffersList(viewModels: List<OfferItemViewModel>) {
+fun OffersList(viewModel: OffersViewModel) {
+    val offerItems by viewModel.items.observeAsState(emptyList())
+
+    val refreshing by viewModel.isRefreshing.observeAsState(false)
+    val refresh = viewModel.refreshItems
+    val state = rememberPullRefreshState(refreshing = refreshing, onRefresh = { refresh.invoke() })
+
     val openDialog = remember { mutableStateOf(false) }
     val selectedViewModel = remember { mutableStateOf(OfferItemViewModel()) }
     val displayMenu = remember { mutableStateOf(false) }
     Scaffold(topBar = { TopBar(displayMenu) },
-        content = {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.space_padding)),
-                modifier = Modifier.padding(dimensionResource(id = R.dimen.space_padding))
-            ) {
-                viewModels.map { item { OfferListItem(viewModel = it, openDialog, selectedViewModel) } }
+        content = { padding ->
+            Box(Modifier.pullRefresh(state)) {
+                Column(modifier = Modifier.padding(padding)) {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.space_padding)),
+                        modifier = Modifier.padding(dimensionResource(id = R.dimen.space_padding))
+                    ) {
+                        offerItems.map { item(key = it.id) { OfferListItem(viewModel = it, openDialog, selectedViewModel) } }
+                    }
+                    ItemAlertDialog(openDialog, selectedViewModel, viewModel)
+                }
+                PullRefreshIndicator(refreshing, state, Modifier.align(Alignment.TopCenter))
             }
-            ItemAlertDialog(openDialog, selectedViewModel)
         })
 }
 
@@ -114,7 +130,7 @@ fun OffersListDropdown(displayMenu: MutableState<Boolean>) {
 }
 
 @Composable
-fun ItemAlertDialog(openDialog: MutableState<Boolean>, selectedViewModel: MutableState<OfferItemViewModel>) {
+fun ItemAlertDialog(openDialog: MutableState<Boolean>, selectedViewModel: MutableState<OfferItemViewModel>, viewModel: OffersViewModel) {
 
     if (openDialog.value) {
         AlertDialog(
@@ -136,7 +152,10 @@ fun ItemAlertDialog(openDialog: MutableState<Boolean>, selectedViewModel: Mutabl
                     }
                     Button(
                         modifier = Modifier.fillMaxWidth(),
-                        onClick = { openDialog.value = false }
+                        onClick = {
+                            viewModel.deleteItem.invoke(selectedViewModel.value)
+                            openDialog.value = false
+                        }
                     ) {
                         Text(stringResource(id = R.string.remove_offer))
                     }
@@ -149,5 +168,5 @@ fun ItemAlertDialog(openDialog: MutableState<Boolean>, selectedViewModel: Mutabl
 @Preview(showBackground = false)
 @Composable
 fun PreviewList() {
-    OffersList(viewModels = DefaultOffer.values().map { it.viewModel })
+    OffersList(OffersViewModel())
 }
